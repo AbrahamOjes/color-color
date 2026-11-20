@@ -1,0 +1,26 @@
+{
+  "name": "colorcolor-agent",
+  "version": "1.0.0",
+  "private": true,
+  "license": "MIT",
+  "description": "MCP server exposing the ColorColor virtual game to autonomous agents, bounded by an on-chain mandate.",
+  "type": "module",
+  "bin": {
+    "colorcolor-agent": "./dist/index.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "dev": "tsc --watch",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.30.0",
+    "viem": "^2.47.6",
+    "zod": "^3.25.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.0",
+    "typescript": "^5.7.0"
+  }
+}

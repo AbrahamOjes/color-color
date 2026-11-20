@@ -1,0 +1,77 @@
+name: ci
+
+on:
+  push:
+    branches: [main, "phase-*", "spike-*"]
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  contracts:
+    runs-on: ubuntu-latest
+    defaults: { run: { working-directory: contracts } }
+    steps:
+      - uses: actions/checkout@v4
+      - uses: foundry-rs/foundry-toolchain@v1
+        with: { version: stable }
+      - run: ./install-deps.sh
+      - run: forge build
+      - run: forge test -vvv
+      - name: Odds tables match the contracts
+        run: python3 script/odds/generate.py >/dev/null
+
+  abi-copies:
+    runs-on: ubuntu-latest
+    needs: contracts
+    steps:
+      - uses: actions/checkout@v4
+      - uses: foundry-rs/foundry-toolchain@v1
+        with: { version: stable }
+      - run: cd contracts && ./install-deps.sh && forge build
+      - name: ABI copies in frontend/ and agent/ match the build
+        run: ./scripts/check-abi-copies.sh
+
+  guard:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: ./scripts/guard-tx.test.sh
+
+  frontend:
+    runs-on: ubuntu-latest
+    defaults: { run: { working-directory: frontend } }
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22, cache: npm, cache-dependency-path: frontend/package-lock.json }
+      - run: npm ci
+      - run: npm run lint
+      - run: npm test
+      - run: npm run build
+        env:
+          NEXT_PUBLIC_CHAIN: local
+          NEXT_PUBLIC_GAMES: ""
+
+  agent:
+    runs-on: ubuntu-latest
+    defaults: { run: { working-directory: agent } }
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22 }
+      - run: npm install --no-audit --no-fund
+      - run: npm run typecheck
+
+  ops:
+    runs-on: ubuntu-latest
+    defaults: { run: { working-directory: ops } }
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22 }
+      - run: npm install --no-audit --no-fund
+      - run: npm run typecheck
+      - run: npm test

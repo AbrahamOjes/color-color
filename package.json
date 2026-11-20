@@ -1,0 +1,11 @@
+{
+  "name": "colorcolor-platform",
+  "private": true,
+  "license": "MIT",
+  "description": "Workspace shortcuts. Each package (contracts, frontend, agent, ops) has its own tooling.",
+  "scripts": {
+    "doctor": "npm --prefix ops run doctor",
+    "guard:test": "./scripts/guard-tx.test.sh",
+    "abi:check": "./scripts/check-abi-copies.sh"
+  }
+}

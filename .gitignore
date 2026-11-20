@@ -1,0 +1,31 @@
+# Dependencies
+node_modules/
+frontend/node_modules/
+frontend/.next/
+
+# Foundry
+contracts/out/
+contracts/cache/
+contracts/lib/
+contracts/broadcast/
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# IDE
+.claude/settings.local.json
+.claude/launch.json
+.DS_Store
+*.swp
+*.swo
+
+# Private material kept locally, never published
+private/
+
+# local env backups
+*.amoy-backup
+
+# Python
+__pycache__/

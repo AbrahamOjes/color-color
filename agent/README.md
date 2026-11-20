@@ -41,7 +41,7 @@ Set by the principal when they open the mandate, changeable only by them:
 | `maxStakePerBet` | Caps a single bet |
 | `dailyBudget` | Caps total stake per 24h window. The window is fixed, not rolling: it starts at the first bet and resets 24h later, so up to two budgets can be spent across a boundary |
 | `cooldownSeconds` | Minimum gap between bets — the practical stop on a runaway loop |
-| `allowedBetTypes` | Bitmask over the six bet types |
+| `allowedMarkets` | Bitmask over the game's markets (six ColorColor bet types, eight race markets) |
 | `expiry` | The licence dies on its own |
 | `revoke()` | And the principal can kill it sooner, in one transaction |
 

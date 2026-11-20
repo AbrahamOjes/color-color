@@ -1,19 +1,50 @@
 # ColorColor
 
-Provably fair, fixed-odds virtual games on EVM chains. Draws come from Chainlink VRF, every
-payout is exact integer maths over a known denominator, and settlement costs the same whether a
-draw carries one bet or ten thousand.
+**On-chain games built for AI agents.** An LLM agent connects over MCP, holds its own key and
+plays unattended, but it never holds the money. A human opens an on-chain **mandate** that
+funds the agent's bets and caps what it can do, and every limit is enforced by the contract,
+not by the agent's prompt.
 
-Two games run on a shared engine:
+It is a working reference for a question that matters well beyond games: **how do you let an
+autonomous agent spend money without trusting it?**
+
+## Agents under an on-chain mandate
+
+The human (the *principal*) deposits USDC into [`AgentMandate`](contracts/src/AgentMandate.sol)
+and sets the rules. The agent's wallet holds gas only. Bets are paid from the mandate, and
+winnings go back to the mandate, never to the agent.
+
+| Limit | What it stops |
+|---|---|
+| `balance` | Spending money that was not deposited for the agent |
+| `maxStakePerBet` | One oversized bet |
+| `dailyBudget` | Running through the funds in a day |
+| `cooldownSeconds` | A runaway loop draining the budget in one block |
+| `allowedMarkets` | Bets outside the markets the human approved |
+| `expiry` + `revoke()` | A licence that outlives its welcome; one transaction ends it |
+
+The [MCP server](agent/) exposes the game to any MCP client (Claude Code, Claude Desktop and
+others): read state and odds, quote a bet, check the mandate, place bets, claim winnings, and
+**backtest** a strategy. It tells the connected model plainly that there is no winning
+strategy. The backtester shows it with numbers: over 300,000 simulated draws, every popular
+strategy lands on the house edge, with any difference from a no-signal control inside the
+noise. An agent here is automation under a budget, which is why the budget lives on-chain.
+
+See [`agent/README.md`](agent/README.md) to connect one.
+
+## The games
+
+Fixed-odds virtual games on EVM chains. Draws come from Chainlink VRF, every payout is exact
+integer maths over a known denominator, and settlement costs the same whether a draw carries
+one bet or ten thousand. Two games run on a shared engine:
 
 - **ColorColor**: six balls from 1–49, four colours. Bet on numbers, the dominant colour, the
   sum band (HILO) or the exact colour split (RAINBOW).
-- **VirtualRace**: races of 4–12 runners with win, place, show, forecast, reverse forecast and tricast markets, with
-  a 3D replay that always finishes in the on-chain order.
+- **VirtualRace**: races of 4–12 runners with win, place, show, forecast, reverse forecast and
+  tricast markets, with a 3D replay that always finishes in the on-chain order.
 
-Liquidity providers back the house through a shared `HouseVault`. Autonomous agents can play
-under an on-chain mandate (`AgentMandate`), and players can bet holding only USDC through
-EIP-3009 (`GaslessEntry`).
+Liquidity providers back the house through a shared `HouseVault`, and humans can play from the
+web app, betting with only USDC through EIP-3009 (`GaslessEntry`).
 
 > [!WARNING]
 > **Unaudited, experimental software, published for educational and research purposes.** It is
@@ -26,9 +57,9 @@ EIP-3009 (`GaslessEntry`).
 
 | Path | What it is |
 |---|---|
-| [`contracts/`](contracts/) | Foundry project: game engine, games, vault, odds libraries, deploy scripts |
-| [`frontend/`](frontend/) | Next.js app: game boards, results, stats, vault, 3D race replay |
 | [`agent/`](agent/) | MCP server that lets an LLM agent play under an on-chain mandate, plus a strategy backtester |
+| [`contracts/`](contracts/) | Foundry project: game engine, games, mandate, vault, odds libraries, deploy scripts |
+| [`frontend/`](frontend/) | Next.js app: game boards, results, stats, vault, 3D race replay |
 | [`ops/`](ops/) | Operations services: deployment doctor, keeper, settlement verifier, relayer |
 | [`scripts/`](scripts/) | Repo guardrails: ABI copy check, transaction guard for coding agents |
 | [`docs/`](docs/) | Design and architecture |
